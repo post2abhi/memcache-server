@@ -5,9 +5,12 @@ This server supports `get` with multiple keys, `set` and `quit` commands.
 ## Quick Start
 Clone the repo as the first step. Then follow the instructions below.
 
-### Start server
+### Build
 1. cd memcache-server
 2. ./gradlew
+
+### Start server
+1. cd memcache-server
 3. ./start.sh
 
 At this point server would be running at the default port `11211`. You should see following
@@ -49,7 +52,7 @@ There are 2 distinct components in the application.
 1. Server - a tcp server that listens for memcache requests, decodes them and pass the request to cache component. It also encodes the response and exceptions.
 2. Cache - its an in-memory cache that stores keys and associated values.
 
-#### Server
+### Server
 Server is based on [netty.io](http://netty.io/) framework that utilizes java [nio](https://docs.oracle.com/javase/8/docs/api/java/nio/package-summary.html) APIs.  
 It allows you to write asynchronous event driven IO applications that can scale very high.  
 
@@ -60,7 +63,7 @@ or exception happens. After which point, it goes back to `AcceptCommandState`.
 `MemcacheProtocolListener` is the main server. When a new client connection is received, it instantiates `MemcacheProtocolHandler` that gets bound to this
 connection. `MemcacheProtocolHandler` is the state machine that handles all client requests and response for this connection.
 
-#### Cache
+### Cache
 There are 3 cache implementations:
 1. `SimpleCache`:
 This is just a wrapper around java collection's `ConcurrentHashMap`. This was written just to get some baseline performance numbers.
@@ -113,7 +116,9 @@ Cache size: 2413140
 ````
 
 ### Summary
-Batch eviction improves the performance by roughly 30%.
+Batch eviction improves the performance by roughly 30%. The improvement is due to 2 optimizations:
+1. Lock striping
+2. Reduce time spent in `Critical Section`
 
 
 
