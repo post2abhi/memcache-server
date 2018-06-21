@@ -4,7 +4,7 @@
 package com.github.ak.memcache.server;
 
 import com.github.ak.memcache.cache.Cache;
-import com.github.ak.memcache.server.codec.MemcacheRequestDecoder;
+import com.github.ak.memcache.server.codec.EncoderDecoder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
@@ -63,9 +63,9 @@ public class MemcacheProtocolHandler extends SimpleChannelInboundHandler<String>
 
         if (msg!=null || !msg.isEmpty()){
             try {
-                state.handle(this, ctx, MemcacheRequestDecoder.decode(msg));
+                state.handle(this, ctx, EncoderDecoder.decode(msg));
             } catch (MemcacheProtocolException e) {
-                ctx.write(e.toString()+ "\r\n");
+                ctx.write(EncoderDecoder.encodeException(e));
             }
         }
     }

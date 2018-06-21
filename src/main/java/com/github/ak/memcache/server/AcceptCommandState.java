@@ -3,6 +3,7 @@
  */
 package com.github.ak.memcache.server;
 
+import com.github.ak.memcache.server.codec.EncoderDecoder;
 import com.github.ak.memcache.server.codec.GetCommandRequest;
 import com.github.ak.memcache.server.codec.MemcacheRequest;
 import com.github.ak.memcache.server.codec.QuitCommandRequest;
@@ -47,19 +48,11 @@ public class AcceptCommandState implements HandlerState {
         for (String key: (request).getKeys()){
             String data = protocolHandler.getCache().get(key);
             if (data != null) {
-                response.append("VALUE").append(" ")
-                        .append(key).append(" ")
-                        .append(0).append(" ") //flag;just hardcode since we didnt implement storing it
-                        .append(data.length())
-                        .append("\r\n")
-                        .append(data)
-                        .append("\r\n");
+                response.append(EncoderDecoder.encodeData(key, data));
             }
-
         }
-        response.append("END\r\n");
+        response.append(EncoderDecoder.endMarker());
         channelHandler.write(response.toString());
-
     }
 
     private void handleSet(MemcacheProtocolHandler protocolHandler, SetCommandRequest request){

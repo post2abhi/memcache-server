@@ -45,7 +45,18 @@ $
 ````
 ## Design
 
-## Load
+Server
+Based on Netty, async IO
+Server works as state machine
+
+Cache
+Eager eviction
+Batch eviction
+
+## Performance
 
 ## Further improvements
+LMAX Disruptor
+Probabilistic Algorithms for eviction
+Distribution and replication
 

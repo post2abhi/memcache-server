@@ -3,6 +3,7 @@
  */
 package com.github.ak.memcache.server;
 
+import com.github.ak.memcache.server.codec.EncoderDecoder;
 import com.github.ak.memcache.server.codec.MemcacheRequest;
 import com.github.ak.memcache.server.codec.SetCommandRequest;
 import io.netty.channel.ChannelHandlerContext;
@@ -38,10 +39,12 @@ public class AcceptDataState implements HandlerState {
         if (buffer.length() <= command.getNumDataBytes()-1){
             buffer.append("\n");
         }
+
         if (buffer.length() == command.getNumDataBytes()) {
             protocolHandler.getCache().put(command.getKey(), buffer.toString());
             protocolHandler.setState(new AcceptCommandState());
-            channelHandler.write("STORED\r\n");
+            channelHandler.write(EncoderDecoder.storedResponse());
+
         }else if (buffer.length() > command.getNumDataBytes()){
             protocolHandler.setState(new AcceptCommandState());
             throw new MemcacheProtocolException.ClientException("Data size exceeded");

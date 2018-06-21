@@ -3,6 +3,7 @@
  */
 package com.github.ak.memcache.server.codec;
 
+import com.github.ak.memcache.server.MemcacheProtocolException;
 import com.google.common.base.Preconditions;
 
 public class SetCommandRequest implements MemcacheRequest {
@@ -15,7 +16,7 @@ public class SetCommandRequest implements MemcacheRequest {
 
     private static final int EXPECTED_TOKENS = 5;//atleast
 
-    public SetCommandRequest(String request){
+    public SetCommandRequest(String request) throws MemcacheProtocolException.ClientException {
         Preconditions.checkNotNull(request);
         this.message = request;
         parse();
@@ -48,9 +49,11 @@ public class SetCommandRequest implements MemcacheRequest {
     /**
      * <command name> <key> <flags> <exptime> <bytes> [noreply]\r\n
      */
-    private void parse(){
+    private void parse() throws MemcacheProtocolException.ClientException {
         String[] tokens = message.split("\\s+");
-        Preconditions.checkState(tokens.length >= EXPECTED_TOKENS);
+        if (tokens.length < EXPECTED_TOKENS){
+            throw new MemcacheProtocolException.ClientException("Insufficient arguments");
+        }
 
         key = tokens[1];
         flags = Integer.parseInt(tokens[2]);
