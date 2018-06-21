@@ -11,9 +11,9 @@ Clone the repo as the first step. Then follow the instructions below.
 
 ### Start server
 1. cd memcache-server
-3. ./start.sh
+3. ./start.sh [port]
 
-At this point server would be running at the default port `11211`. You should see following
+At this point server would be running at the specified port or default `11211`. You should see following
 lines on console:
 ````text
 2018-06-18 21:56:03.575  INFO 78191 --- [ntLoopGroup-2-1] io.netty.handler.logging.LoggingHandler  : [id: 0x483423c3] BIND: 0.0.0.0/0.0.0.0:11211
