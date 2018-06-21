@@ -44,6 +44,7 @@ quit
 $
 ````
 ## Design
+This application is bootstrapped using [Spring Boot](https://spring.io/projects/spring-boot). 
 There are 2 distinct components in the application.
 1. Server - a tcp server that listens for memcache requests, decodes them and pass the request to cache component. It also encodes the response and exceptions.
 2. Cache - its an in-memory cache that stores keys and associated values.
@@ -72,8 +73,7 @@ This also uses `ConcurrentHashMap`. It augments it with a doubly linked list tha
 key to oldest key is stored from `head` to `tail`.
 When a key is accessed/stored/updated, its moved to `head`. Furthermore, when a key is stored, cache checks if capacity allows storage. If
 cache is full, `tail` is removed to make room for new entry.
-Both `map` and `linkedlist` data structures are guarded by `ReadWriteLock` to allow concurrency. Lock is stripped to reduce contention. Stripping
-is based on [Java Concurrency In Practice](http://jcip.net/).
+Both `map` and `linkedlist` data structures are guarded by `ReentrantLock` to allow concurrency. 
 
 3. `LruCacheWithBatchEviction`:
 This implementation builds upon `LruCacheWithEagerEviction` and tries to minimize the time spent in `Critical Section`. In eager eviction, the
@@ -82,6 +82,7 @@ to linked list altogether thereby shortening the time in `Critical Section` to m
 which is periodically drained. A dedicated thread periodically wakes up, reads all entries from the queue and updates a `LinkedHashMap` that
 keeps entries ordered by LRU. When cache goes over its capacity, this thread starts evicting older entries until the cache size goes below
 configured capacity.
+Data structures are guarded by `ReadWriteLock`. Lock is stripped to reduce contention. Stripping is based on [Java Concurrency In Practice](http://jcip.net/).
 Recording `key` access into `BlockingQueue` does not block, so its immediate. This means if the queue is full, the access wont be recorded. This
 trade-off is done for performance. There have been studies that shows probabilistic algorithms tend to provide good performance benefits
 without loosing accuracy. See [TinyLFU: A Highly Efficient Cache Admission Policy](http://www.cs.technion.ac.il/~gilga/TinyLFU_PDP2014.pdf).
@@ -111,8 +112,8 @@ Cache missed: 907195
 Cache size: 2413140
 ````
 
-## Further improvements
-LMAX Disruptor
-Probabilistic Algorithms
-Distribution and replication
+### Summary
+Batch eviction improves the performance by roughly 30%.
+
+
 
