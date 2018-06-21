@@ -43,6 +43,7 @@ public class AcceptDataState implements HandlerState {
             protocolHandler.setState(new AcceptCommandState());
             channelHandler.write("STORED\r\n");
         }else if (buffer.length() > command.getNumDataBytes()){
+            protocolHandler.setState(new AcceptCommandState());
             throw new MemcacheProtocolException.ClientException("Data size exceeded");
         }
 

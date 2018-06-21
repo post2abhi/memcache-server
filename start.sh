@@ -2,7 +2,7 @@
 
 port=$1
 scriptdir="$(cd "$(dirname "$0")"; pwd)"
-exec="$scriptdir/build/libs/ak-cache.jar"
+exec="$scriptdir/build/libs/memcache-server.jar"
 cmd="java -jar"
 
 if [[ "$port" = "" ]] ; then
