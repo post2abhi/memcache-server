@@ -89,6 +89,27 @@ The design is loosely based on `Commit Log` that many `SSTables` based DBs use w
 changes are then replayed on to *main* data structure asynchronously.
 
 ## Performance
+On my system (8 core), load test used 9 threads with each thread making 1 million requests (Read(70%)/Write(30%)). For read, test gives preference
+to recently stored keys to simulate frequent access to recent data.
+
+#### Simple Cache
+````Text
+Time taken(ms): 4159
+Cache size: 2699958
+````
+
+#### Eager Eviction
+````text
+Time taken(ms): 15286
+Cache missed: 922066
+Cache size: 2000000
+````
+#### Batch Eviction
+````text
+Time taken(ms): 10553
+Cache missed: 907195
+Cache size: 2413140
+````
 
 ## Further improvements
 LMAX Disruptor

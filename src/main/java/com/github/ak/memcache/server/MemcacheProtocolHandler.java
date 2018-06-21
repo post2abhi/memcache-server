@@ -5,6 +5,7 @@ package com.github.ak.memcache.server;
 
 import com.github.ak.memcache.cache.Cache;
 import com.github.ak.memcache.server.codec.EncoderDecoder;
+import com.google.common.annotations.VisibleForTesting;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
@@ -87,5 +88,10 @@ public class MemcacheProtocolHandler extends SimpleChannelInboundHandler<String>
 
     protected void setState(HandlerState state){
         this.state = state;
+    }
+
+    @VisibleForTesting
+    protected HandlerState getState(){
+        return this.state;
     }
 }

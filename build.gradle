@@ -20,7 +20,8 @@ dependencies {
     compile('io.netty:netty-all:4.1.25.Final')
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile('org.junit.jupiter:junit-jupiter-api:5.0.0')
+    testCompile('org.junit.jupiter:junit-jupiter-api:5.1.0')
+    testCompile('org.mockito:mockito-junit-jupiter:2.19.0')
 }
 
 repositories {

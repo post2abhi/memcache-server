@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <li>Cache missed - How many cache misses we got</li>
  * </ul>
  */
-class LoadTest {
+public class LoadTest {
 
     static final Logger logger = LoggerFactory.getLogger(LoadTest.class);
 
@@ -69,14 +69,14 @@ class LoadTest {
     }
 
     @Test
-    void loadTestCacheWithEagerEviction(){
+    public void loadTestCacheWithEagerEviction(){
         int capacity = 2000000;
         Cache<String,String> cache = new LruCacheWithEagerEviction<>(capacity);
         loadTest(cache);
     }
 
     @Test
-    void loadTestCacheWithBatchEviction(){
+    public void loadTestCacheWithBatchEviction(){
         int capacity = 2000000;
         Cache<String,String> cache = new LruCacheWithBatchEviction<>(capacity);
         loadTest(cache);
