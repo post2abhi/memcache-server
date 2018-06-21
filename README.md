@@ -44,19 +44,54 @@ quit
 $
 ````
 ## Design
+There are 2 distinct components in the application.
+1. Server - a tcp server that listens for memcache requests, decodes them and pass the request to cache component. It also encodes the response and exceptions.
+2. Cache - its an in-memory cache that stores keys and associated values.
 
-Server
-Based on Netty, async IO
-Server works as state machine
+#### Server
+Server is based on [netty.io](http://netty.io/) framework that utilizes java [nio](https://docs.oracle.com/javase/8/docs/api/java/nio/package-summary.html) APIs.  
+It allows you to write asynchronous event driven IO applications that can scale very high.  
 
-Cache
-Eager eviction
-Batch eviction
+Server itself works as a state machine. It starts in `AcceptCommandState` where it listens for memcache commands from clients.
+It transitions to `AcceptDataState` after receiving a `set` command. This state is maintained until all data is received
+or exception happens. After which point, it goes back to `AcceptCommandState`.
+
+`MemcacheProtocolListener` is the main server. When a new client connection is received, it instantiates `MemcacheProtocolHandler` that gets bound to this
+connection. `MemcacheProtocolHandler` is the state machine that handles all client requests and response for this connection.
+
+#### Cache
+There are 3 cache implementations:
+1. `SimpleCache`:
+This is just a wrapper around java collection's `ConcurrentHashMap`. This was written just to get some baseline performance numbers.
+There's no eviction in this cache and the store will grow to occupy all available memory. Although not implemented, to simulate eviction,
+we could perhaps use [WeakReference](https://docs.oracle.com/javase/8/docs/api/java/lang/ref/WeakReference.html) for `values` to allow JVM 
+GC to remove these objects to reclaim memory.
+
+2. `LruCacheWithEagerEviction`:
+This also uses `ConcurrentHashMap`. It augments it with a doubly linked list that keeps the keys ordered by recency. Most recenltly accessed
+key to oldest key is stored from `head` to `tail`.
+When a key is accessed/stored/updated, its moved to `head`. Furthermore, when a key is stored, cache checks if capacity allows storage. If
+cache is full, `tail` is removed to make room for new entry.
+Both `map` and `linkedlist` data structures are guarded by `ReadWriteLock` to allow concurrency. Lock is stripped to reduce contention. Stripping
+is based on [Java Concurrency In Practice](http://jcip.net/).
+
+3. `LruCacheWithBatchEviction`:
+This implementation builds upon `LruCacheWithEagerEviction` and tries to minimize the time spent in `Critical Section`. In eager eviction, the
+`Critical Section` comprises of updating the map and adjusting the linked list accordingly. This implementation tries to eliminate the update
+to linked list altogether thereby shortening the time in `Critical Section` to map update only. The `key` access is recorded in a `BlockingQueue`
+which is periodically drained. A dedicated thread periodically wakes up, reads all entries from the queue and updates a `LinkedHashMap` that
+keeps entries ordered by LRU. When cache goes over its capacity, this thread starts evicting older entries until the cache size goes below
+configured capacity.
+Recording `key` access into `BlockingQueue` does not block, so its immediate. This means if the queue is full, the access wont be recorded. This
+trade-off is done for performance. There have been studies that shows probabilistic algorithms tend to provide good performance benefits
+without loosing accuracy. See [TinyLFU: A Highly Efficient Cache Admission Policy](http://www.cs.technion.ac.il/~gilga/TinyLFU_PDP2014.pdf).
+The design is loosely based on `Commit Log` that many `SSTables` based DBs use where the changes are recoded into an `append-only` log. These
+changes are then replayed on to *main* data structure asynchronously.
 
 ## Performance
 
 ## Further improvements
 LMAX Disruptor
-Probabilistic Algorithms for eviction
+Probabilistic Algorithms
 Distribution and replication
 
